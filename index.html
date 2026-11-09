@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IFL Stadium Directory - Season 2</title>
+    <title>IFL Stadium Directory</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
@@ -85,14 +85,21 @@
                     <div>
                         <div class="flex items-center gap-2">
                             <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white uppercase">IFL Stadium Directory</h1>
-                            <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-brand-red/10 text-brand-red border border-brand-red/30">Season 2</span>
                         </div>
-                        <p class="text-xs sm:text-sm text-gray-400 mt-0.5">International Football League • Argyros Stadium (Argiroupolis)</p>
+                        <p class="text-xs sm:text-sm text-gray-400 mt-0.5">International Football League</p>
                     </div>
                 </div>
                 
                 <!-- Action Buttons Top Bar -->
                 <div class="flex flex-wrap items-center gap-2">
+                    <button onclick="toggleFolderModal()" class="flex items-center gap-2 bg-brand-card hover:bg-brand-border text-gray-300 hover:text-white text-xs sm:text-sm font-medium px-3.5 py-2.5 rounded-lg border border-brand-border transition-all duration-200 active:scale-95 shadow-sm">
+                        <i class="fa-solid fa-folder-open text-amber-400"></i>
+                        <span>data/logos Folder Setup</span>
+                    </button>
+                    <button onclick="resetAllLogos()" class="flex items-center gap-2 bg-brand-card hover:bg-brand-border text-gray-300 hover:text-white text-xs sm:text-sm font-medium px-3.5 py-2.5 rounded-lg border border-brand-border transition-all duration-200 active:scale-95 shadow-sm">
+                        <i class="fa-solid fa-rotate-left text-brand-red"></i>
+                        <span>Reset Logos</span>
+                    </button>
                     <button onclick="copyAllStadiums()" class="flex items-center gap-2 bg-brand-card hover:bg-brand-border text-white text-xs sm:text-sm font-medium px-4 py-2.5 rounded-lg border border-brand-border transition-all duration-200 active:scale-95 shadow-sm">
                         <i class="fa-regular fa-copy text-brand-red"></i>
                         <span>Copy All Stadium Names</span>
@@ -141,24 +148,17 @@
             </div>
         </div>
 
-        <!-- Table View Container -->
-        <div class="bg-brand-card border border-brand-border rounded-2xl shadow-xl overflow-hidden mb-8">
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-brand-input border-b border-brand-border text-xs uppercase font-semibold text-gray-400 tracking-wider">
-                            <th class="py-4 px-6">Team</th>
-                            <th class="py-4 px-6">Stadium Name</th>
-                            <th class="py-4 px-6">Town / Location</th>
-                            <th class="py-4 px-6">Home Venue Status</th>
-                            <th class="py-4 px-6 text-right">Quick Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="stadiumTableBody" class="divide-y divide-brand-border/50 text-sm">
-                        <!-- Rows rendered via JS -->
-                    </tbody>
-                </table>
-            </div>
+        <!-- Divisions View Container -->
+        <div id="divisionsContainer" class="space-y-6 mb-8">
+            <!-- Divisions rendered dynamically via JS -->
+        </div>
+        
+        <!-- Empty Search Result State -->
+        <div id="noResults" class="hidden bg-brand-card border border-brand-border rounded-2xl p-12 text-center shadow-xl">
+            <i class="fa-solid fa-ghost text-4xl text-gray-600 mb-3"></i>
+            <p class="text-gray-400 font-medium text-base">No matching stadiums or teams found.</p>
+            <p class="text-gray-600 text-xs mt-1">Try tweaking your search or filter options.</p>
+        </div>
             
             <!-- Empty Search Result State -->
             <div id="noResults" class="hidden p-12 text-center">
@@ -167,7 +167,49 @@
                 <p class="text-gray-600 text-xs mt-1">Try tweaking your search or filter options.</p>
             </div>
         </div>
+    <!-- Hidden File Input for Image Upload -->
+    <input type="file" id="logoFileInput" accept="image/*" class="hidden" onchange="handleLogoUpload(event)">
+    <input type="file" id="folderFileInput" webkitdirectory directory multiple class="hidden" onchange="handleFolderSelect(event)">
 
+    <!-- Folder Setup & File Map Modal -->
+    <div id="folderModal" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-brand-card border border-brand-border rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[85vh]">
+            <div class="px-6 py-4 border-b border-brand-border flex items-center justify-between bg-brand-input">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-folder-tree text-amber-400 text-lg"></i>
+                    <h3 class="text-base font-bold text-white">data/logos Folder Convention</h3>
+                </div>
+                <button onclick="toggleFolderModal()" class="text-gray-400 hover:text-white p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <div class="p-6 overflow-y-auto space-y-4 text-xs sm:text-sm">
+                <p class="text-gray-300">
+                    Team logos are automatically mapped to the <code class="bg-black/50 text-amber-400 px-2 py-0.5 rounded border border-amber-500/20">data/logos/</code> directory using the standard team name slug:
+                </p>
+
+                <div class="flex flex-wrap gap-2 pt-1">
+                    <button onclick="document.getElementById('folderFileInput').click()" class="bg-amber-500/10 border border-amber-500/30 text-amber-400 hover:bg-amber-500/20 px-3 py-2 rounded-lg font-medium flex items-center gap-2 transition-all">
+                        <i class="fa-solid fa-folder-open"></i> Select Local 'data' or 'logos' Directory
+                    </button>
+                </div>
+
+                <div class="border border-brand-border rounded-xl bg-brand-input/50 p-4 space-y-3">
+                    <div class="font-semibold text-gray-200 text-xs uppercase tracking-wider flex items-center justify-between">
+                        <span>Expected Logo Filenames</span>
+                        <button onclick="copyAllPaths()" class="text-brand-red hover:underline text-[11px] font-normal">Copy All File Paths</button>
+                    </div>
+                    <div id="pathList" class="space-y-2 max-h-56 overflow-y-auto pr-2 font-mono text-xs">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+            <div class="px-6 py-3 border-t border-brand-border bg-brand-input flex justify-end">
+                <button onclick="toggleFolderModal()" class="bg-brand-red hover:bg-brand-darkRed text-white px-4 py-2 rounded-lg text-xs font-semibold">
+                    Close
+                </button>
+            </div>
+        </div>
     </div>
 
     <!-- Toast Notification -->
@@ -184,36 +226,181 @@
     <!-- Footer -->
     <footer class="border-t border-brand-border py-4 bg-brand-card/50">
         <div class="max-w-7xl mx-auto px-4 text-center text-xs text-gray-500 flex flex-col sm:flex-row items-center justify-between gap-2">
-            <div>IFL Season 2 • International Football League Admin Directory</div>
+            <div>International Football League Admin Directory</div>
             <div>Click any stadium row or copy button to instantly copy name</div>
         </div>
     </footer>
 
     <!-- JavaScript Data and Logic -->
     <script>
-        // Extracted dataset from provided screenshot
+        // Extracted dataset structured into divisions from screenshot standings
         const stadiumData = [
-            { id: 1, team: "Miskauga Boulders", stadium: "Alloy Field", town: "Miskauga", homeStatus: "Own stadium", isShared: false, icon: "fa-cubes", color: "from-amber-700 to-yellow-600" },
-            { id: 2, team: "Laiyford Evergreens", stadium: "Maeve Golden Stadium", town: "New Shelby", homeStatus: "Own stadium", isShared: false, icon: "fa-tree", color: "from-emerald-700 to-green-600" },
-            { id: 3, team: "Greene Hill Brawlers", stadium: "Unicellular Stadium", town: "Greene Hill", homeStatus: "Own stadium", isShared: false, icon: "fa-hand-fist", color: "from-amber-600 to-red-600" },
-            { id: 4, team: "Parikia Poseidons", stadium: "No stadium", town: "Parikia", homeStatus: "Spearhead-Camdyn Field (DEN)", isShared: true, icon: "fa-trident", color: "from-cyan-600 to-blue-600" },
-            { id: 5, team: "Dennison Spears", stadium: "Spearhead-Camdyn Field", town: "Dennison", homeStatus: "Own stadium", isShared: false, icon: "fa-shield-halved", color: "from-purple-700 to-indigo-600" },
-            { id: 6, team: "Kyleton Polar Bears", stadium: "Kyleton Stadium", town: "Kyleton", homeStatus: "Own stadium", isShared: false, icon: "fa-paw", color: "from-sky-600 to-teal-600" },
-            { id: 7, team: "Ashford Smokers", stadium: "Enigma - Turing Field", town: "Ashford", homeStatus: "Own stadium", isShared: false, icon: "fa-smog", color: "from-orange-700 to-amber-600" },
-            { id: 8, team: "Argiroupolis Silvers", stadium: "Argyros Stadium", town: "Argiroupolis", homeStatus: "Own stadium", isShared: false, icon: "fa-coins", color: "from-slate-400 to-zinc-500" },
-            { id: 9, team: "New Southington Skylines", stadium: "Skyline Stadium", town: "Kennedy Park", homeStatus: "Own stadium", isShared: false, icon: "fa-city", color: "from-blue-700 to-indigo-600" },
-            { id: 10, team: "Newtown Knights", stadium: "Stoneridge Stadium", town: "Newtown", homeStatus: "Own stadium", isShared: false, icon: "fa-chess-knight", color: "from-yellow-600 to-amber-500" },
-            { id: 11, team: "Montford Monarchs", stadium: "No stadium", town: "Montford", homeStatus: "Unicellular Stadium (GHB)", isShared: true, icon: "fa-crown", color: "from-amber-500 to-orange-600" },
-            { id: 12, team: "Bradyville Beavers", stadium: "No stadium", town: "Bradyville", homeStatus: "Skyline Stadium (NSO)", isShared: true, icon: "fa-water", color: "from-amber-800 to-yellow-700" }
+            // IFL WEST
+            { id: 1, division: "IFL WEST", team: "New Southington Skylines", slug: "new_southington_skylines", stadium: "Skyline Stadium", town: "Kennedy Park", homeStatus: "Own stadium", isShared: false, icon: "fa-city", color: "from-blue-700 to-indigo-600" },
+            { id: 2, division: "IFL WEST", team: "Laiyford Evergreens", slug: "laiyford_evergreens", stadium: "Maeve Golden Stadium", town: "New Shelby", homeStatus: "Own stadium", isShared: false, icon: "fa-tree", color: "from-emerald-700 to-green-600" },
+            { id: 3, division: "IFL WEST", team: "Miskauga Boulders", slug: "miskauga_boulders", stadium: "Alloy Field", town: "Miskauga", homeStatus: "Own stadium", isShared: false, icon: "fa-cubes", color: "from-amber-700 to-yellow-600" },
+            { id: 4, division: "IFL WEST", team: "Ashford Smokers", slug: "ashford_smokers", stadium: "Enigma - Turing Field", town: "Ashford", homeStatus: "Own stadium", isShared: false, icon: "fa-smog", color: "from-orange-700 to-amber-600" },
+            
+            // IFL CENTRAL
+            { id: 5, division: "IFL CENTRAL", team: "Kyleton Polar Bears", slug: "kyleton_polar_bears", stadium: "Kyleton Stadium", town: "Kyleton", homeStatus: "Own stadium", isShared: false, icon: "fa-paw", color: "from-sky-600 to-teal-600" },
+            { id: 6, division: "IFL CENTRAL", team: "Argiroupolis Silvers", slug: "argiroupolis_silvers", stadium: "Argyros Stadium", town: "Argiroupolis", homeStatus: "Own stadium", isShared: false, icon: "fa-coins", color: "from-slate-400 to-zinc-500" },
+            { id: 7, division: "IFL CENTRAL", team: "Bradyville Beavers", slug: "bradyville_beavers", stadium: "No stadium", town: "Bradyville", homeStatus: "Skyline Stadium (NSO)", isShared: true, icon: "fa-water", color: "from-amber-800 to-yellow-700" },
+            { id: 8, division: "IFL CENTRAL", team: "Parikia Poseidons", slug: "parikia_poseidons", stadium: "No stadium", town: "Parikia", homeStatus: "Spearhead-Camdyn Field (DEN)", isShared: true, icon: "fa-trident", color: "from-cyan-600 to-blue-600" },
+            
+            // IFL EAST
+            { id: 9, division: "IFL EAST", team: "Newtown Knights", slug: "newtown_knights", stadium: "Stoneridge Stadium", town: "Newtown", homeStatus: "Own stadium", isShared: false, icon: "fa-chess-knight", color: "from-yellow-600 to-amber-500" },
+            { id: 10, division: "IFL EAST", team: "Montford Monarchs", slug: "montford_monarchs", stadium: "No stadium", town: "Montford", homeStatus: "Unicellular Stadium (GHB)", isShared: true, icon: "fa-crown", color: "from-amber-500 to-orange-600" },
+            { id: 11, division: "IFL EAST", team: "Dennison Spears", slug: "dennison_spears", stadium: "Spearhead-Camdyn Field", town: "Dennison", homeStatus: "Own stadium", isShared: false, icon: "fa-shield-halved", color: "from-purple-700 to-indigo-600" },
+            { id: 12, division: "IFL EAST", team: "Greene Hill Brawlers", slug: "greene_hill_brawlers", stadium: "Unicellular Stadium", town: "Greene Hill", homeStatus: "Own stadium", isShared: false, icon: "fa-hand-fist", color: "from-amber-600 to-red-600" }
         ];
 
-        // Render Table Data
-        function renderTable(data) {
-            const tbody = document.getElementById('stadiumTableBody');
+        let targetTeamIdForUpload = null;
+        let folderLoadedLogos = {};
+
+        // Helper to get effective logo source for a team
+        function getLogoSrc(item) {
+            const customLogos = getCustomLogos();
+            if (customLogos[item.id]) {
+                return customLogos[item.id];
+            }
+            if (folderLoadedLogos[item.id]) {
+                return folderLoadedLogos[item.id];
+            }
+            return `data/logos/${item.slug}.png`;
+        }
+
+        // Handle image loading error (fallback badge)
+        function handleImageError(imgElement, itemId) {
+            const item = stadiumData.find(t => t.id === itemId);
+            if (!item) return;
+            imgElement.parentElement.innerHTML = `
+                <div class="w-9 h-9 rounded-lg bg-gradient-to-br ${item.color} flex items-center justify-center text-white text-sm shadow-md border border-white/10">
+                    <i class="fa-solid ${item.icon}"></i>
+                </div>
+                <div class="absolute inset-0 bg-black/60 rounded-lg opacity-0 group-hover/logo:opacity-100 flex items-center justify-center transition-opacity text-white text-[10px]">
+                    <i class="fa-solid fa-camera"></i>
+                </div>
+            `;
+        }
+
+        // Handle user picking the local data/logos directory
+        function handleFolderSelect(event) {
+            const files = Array.from(event.target.files);
+            if (!files.length) return;
+
+            let matchedCount = 0;
+            files.forEach(file => {
+                const fileName = file.name.toLowerCase();
+                stadiumData.forEach(item => {
+                    if (fileName.includes(item.slug) || fileName.includes(item.slug.replace(/_/g, '-'))) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            folderLoadedLogos[item.id] = e.target.result;
+                            filterData();
+                        };
+                        reader.readAsDataURL(file);
+                        matchedCount++;
+                    }
+                });
+            });
+
+            showToast(`Folder Loaded`, `Mapped ${matchedCount} logo file(s) from directory`);
+        }
+
+        function toggleFolderModal() {
+            const modal = document.getElementById('folderModal');
+            modal.classList.toggle('hidden');
+            if (!modal.classList.contains('hidden')) {
+                populatePathList();
+            }
+        }
+
+        function populatePathList() {
+            const list = document.getElementById('pathList');
+            list.innerHTML = stadiumData.map(item => `
+                <div class="flex items-center justify-between bg-black/30 p-2 rounded border border-brand-border/60">
+                    <span class="text-gray-300 font-semibold">${item.team}:</span>
+                    <div class="flex items-center gap-2">
+                        <code class="text-amber-400">data/logos/${item.slug}.png</code>
+                        <button onclick="copyToClipboard('data/logos/${item.slug}.png', 'Path copied!')" class="text-gray-400 hover:text-white text-xs">
+                            <i class="fa-regular fa-copy"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function copyAllPaths() {
+            const paths = stadiumData.map(i => `data/logos/${i.slug}.png`).join('\n');
+            copyToClipboard(paths, 'All logo paths copied!');
+        }
+
+        // Load custom logos from localStorage
+        function getCustomLogos() {
+            try {
+                return JSON.parse(localStorage.getItem('ifl_team_logos') || '{}');
+            } catch (e) {
+                return {};
+            }
+        }
+
+        // Save custom logo
+        function saveCustomLogo(teamId, dataUrl) {
+            const logos = getCustomLogos();
+            logos[teamId] = dataUrl;
+            try {
+                localStorage.setItem('ifl_team_logos', JSON.stringify(logos));
+            } catch (e) {
+                console.warn('Storage limit reached, logo displayed for session only.');
+            }
+        }
+
+        // Trigger file input for a specific team
+        function triggerImageUpload(teamId) {
+            targetTeamIdForUpload = teamId;
+            const fileInput = document.getElementById('logoFileInput');
+            fileInput.value = '';
+            fileInput.click();
+        }
+
+        // Handle uploaded image file
+        function handleLogoUpload(event) {
+            const file = event.target.files[0];
+            if (!file || !targetTeamIdForUpload) return;
+
+            if (!file.type.startsWith('image/')) {
+                showToast('Invalid File', 'Please upload a valid image file');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const dataUrl = e.target.result;
+                saveCustomLogo(targetTeamIdForUpload, dataUrl);
+                
+                const team = stadiumData.find(t => t.id === targetTeamIdForUpload);
+                showToast(`Logo Updated!`, `Custom logo set for ${team ? team.team : 'team'}`);
+                
+                filterData(); // Re-render table with new logo
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Reset custom logos
+        function resetAllLogos() {
+            localStorage.removeItem('ifl_team_logos');
+            folderLoadedLogos = {};
+            showToast('Logos Reset', 'Restored default data/logos folder path mapping');
+            filterData();
+        }
+
+        // Render Divisions Table View
+        function renderDivisions(data) {
+            const container = document.getElementById('divisionsContainer');
             const noResults = document.getElementById('noResults');
             const counter = document.getElementById('counter');
             
-            tbody.innerHTML = '';
+            container.innerHTML = '';
             counter.innerText = data.length;
 
             if (data.length === 0) {
@@ -223,62 +410,101 @@
                 noResults.classList.add('hidden');
             }
 
-            data.forEach(item => {
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-brand-input/60 transition-colors duration-150 group";
+            // Group by division preserving order
+            const divisions = ["IFL WEST", "IFL CENTRAL", "IFL EAST"];
+            
+            divisions.forEach(divName => {
+                const divTeams = data.filter(item => item.division === divName);
+                if (divTeams.length === 0) return;
 
-                const isNoStadium = item.stadium === "No stadium";
+                const divCard = document.createElement('div');
+                divCard.className = "bg-brand-card border border-brand-border rounded-2xl shadow-xl overflow-hidden";
                 
-                tr.innerHTML = `
-                    <td class="py-4 px-6 font-semibold text-white">
-                        <div class="flex items-center space-x-3">
-                            <div class="w-8 h-8 rounded-lg bg-gradient-to-br ${item.color} flex items-center justify-center text-white text-xs shadow-md">
-                                <i class="fa-solid ${item.icon}"></i>
-                            </div>
-                            <span>${escapeHtml(item.team)}</span>
-                        </div>
-                    </td>
-                    <td class="py-4 px-6">
+                divCard.innerHTML = `
+                    <div class="bg-brand-input border-b border-brand-border px-6 py-3 flex items-center justify-between">
                         <div class="flex items-center gap-2">
-                            <span class="${isNoStadium ? 'text-gray-500 italic' : 'text-gray-200 font-medium'}">
-                                ${escapeHtml(item.stadium)}
-                            </span>
-                            ${!isNoStadium ? `
-                                <button onclick="copyToClipboard('${escapeJs(item.stadium)}', 'Stadium name copied!')" 
-                                    title="Copy Stadium Name"
-                                    class="text-gray-500 hover:text-brand-red opacity-0 group-hover:opacity-100 transition-opacity duration-200 px-1.5 py-0.5 rounded">
-                                    <i class="fa-regular fa-copy text-xs"></i>
-                                </button>
-                            ` : ''}
+                            <span class="w-2.5 h-2.5 rounded-full bg-brand-red"></span>
+                            <h2 class="text-sm font-extrabold uppercase tracking-wider text-white">${divName}</h2>
                         </div>
-                    </td>
-                    <td class="py-4 px-6 text-gray-300">${escapeHtml(item.town)}</td>
-                    <td class="py-4 px-6">
-                        ${item.isShared ? `
-                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                                <i class="fa-solid fa-arrow-right-arrow-left text-[10px]"></i>
-                                ${escapeHtml(item.homeStatus)}
-                            </span>
-                        ` : `
-                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                                <i class="fa-solid fa-house text-[10px]"></i>
-                                ${escapeHtml(item.homeStatus)}
-                            </span>
-                        `}
-                    </td>
-                    <td class="py-4 px-6 text-right">
-                        ${!isNoStadium ? `
-                            <button onclick="copyToClipboard('${escapeJs(item.stadium)}', '${escapeJs(item.stadium)}')" 
-                                class="inline-flex items-center gap-1.5 text-xs font-medium bg-brand-input hover:bg-brand-red text-gray-300 hover:text-white px-3 py-1.5 rounded-lg border border-brand-border hover:border-brand-red transition-all duration-200">
-                                <i class="fa-regular fa-copy"></i>
-                                Copy Name
-                            </button>
-                        ` : `
-                            <span class="text-xs text-gray-600 italic">N/A</span>
-                        `}
-                    </td>
+                        <span class="text-xs text-gray-400 font-mono">${divTeams.length} TEAMS</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="border-b border-brand-border/60 text-[11px] uppercase font-semibold text-gray-400 tracking-wider bg-black/20">
+                                    <th class="py-3 px-6">Team</th>
+                                    <th class="py-3 px-6">Stadium Name</th>
+                                    <th class="py-3 px-6">Town / Location</th>
+                                    <th class="py-3 px-6">Home Venue Status</th>
+                                    <th class="py-3 px-6 text-right">Quick Action</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-brand-border/50 text-sm">
+                                ${divTeams.map(item => {
+                                    const isNoStadium = item.stadium === "No stadium";
+                                    const logoSrc = getLogoSrc(item);
+                                    return `
+                                        <tr class="hover:bg-brand-input/60 transition-colors duration-150 group">
+                                            <td class="py-3.5 px-6 font-semibold text-white">
+                                                <div class="flex items-center space-x-3">
+                                                    <div class="relative group/logo cursor-pointer flex-shrink-0" onclick="triggerImageUpload(${item.id})" title="Click to upload logo for ${escapeHtml(item.team)}">
+                                                        <img src="${logoSrc}" alt="${escapeHtml(item.team)}" onerror="handleImageError(this, ${item.id})" class="w-9 h-9 rounded-lg object-cover border border-brand-border shadow-md">
+                                                        <div class="absolute inset-0 bg-black/60 rounded-lg opacity-0 group-hover/logo:opacity-100 flex items-center justify-center transition-opacity text-white text-[10px]">
+                                                            <i class="fa-solid fa-camera"></i>
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <span class="block font-semibold text-white">${escapeHtml(item.team)}</span>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="py-3.5 px-6">
+                                                <div class="flex items-center gap-2">
+                                                    <span class="${isNoStadium ? 'text-gray-500 italic' : 'text-gray-200 font-medium'}">
+                                                        ${escapeHtml(item.stadium)}
+                                                    </span>
+                                                    ${!isNoStadium ? `
+                                                        <button onclick="copyToClipboard('${escapeJs(item.stadium)}', 'Stadium name copied!')" 
+                                                            title="Copy Stadium Name"
+                                                            class="text-gray-500 hover:text-brand-red opacity-0 group-hover:opacity-100 transition-opacity duration-200 px-1.5 py-0.5 rounded">
+                                                            <i class="fa-regular fa-copy text-xs"></i>
+                                                        </button>
+                                                    ` : ''}
+                                                </div>
+                                            </td>
+                                            <td class="py-3.5 px-6 text-gray-300">${escapeHtml(item.town)}</td>
+                                            <td class="py-3.5 px-6">
+                                                ${item.isShared ? `
+                                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                                                        <i class="fa-solid fa-arrow-right-arrow-left text-[10px]"></i>
+                                                        ${escapeHtml(item.homeStatus)}
+                                                    </span>
+                                                ` : `
+                                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                                        <i class="fa-solid fa-house text-[10px]"></i>
+                                                        ${escapeHtml(item.homeStatus)}
+                                                    </span>
+                                                `}
+                                            </td>
+                                            <td class="py-3.5 px-6 text-right">
+                                                ${!isNoStadium ? `
+                                                    <button onclick="copyToClipboard('${escapeJs(item.stadium)}', '${escapeJs(item.stadium)}')" 
+                                                        class="inline-flex items-center gap-1.5 text-xs font-medium bg-brand-input hover:bg-brand-red text-gray-300 hover:text-white px-3 py-1.5 rounded-lg border border-brand-border hover:border-brand-red transition-all duration-200">
+                                                        <i class="fa-regular fa-copy"></i>
+                                                        Copy Name
+                                                    </button>
+                                                ` : `
+                                                    <span class="text-xs text-gray-600 italic">N/A</span>
+                                                `}
+                                            </td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
                 `;
-                tbody.appendChild(tr);
+                container.appendChild(divCard);
             });
         }
 
@@ -291,6 +517,7 @@
                 const matchesSearch = item.team.toLowerCase().includes(query) ||
                                       item.stadium.toLowerCase().includes(query) ||
                                       item.town.toLowerCase().includes(query) ||
+                                      item.division.toLowerCase().includes(query) ||
                                       item.homeStatus.toLowerCase().includes(query);
 
                 let matchesStatus = true;
@@ -300,7 +527,7 @@
                 return matchesSearch && matchesStatus;
             });
 
-            renderTable(filtered);
+            renderDivisions(filtered);
         }
 
         // Copy Single Item to Clipboard
@@ -368,11 +595,12 @@
         function exportData(format) {
             let content = '';
             let mimeType = '';
-            let filename = `IFL_Stadiums_Season_2.${format}`;
+            let filename = `IFL_Stadiums.${format}`;
 
             if (format === 'csv') {
-                const headers = ["Team", "Stadium Name", "Town", "Home Venue Status"];
+                const headers = ["Division", "Team", "Stadium Name", "Town", "Home Venue Status"];
                 const rows = stadiumData.map(d => [
+                    `"${d.division}"`,
                     `"${d.team}"`,
                     `"${d.stadium}"`,
                     `"${d.town}"`,
@@ -408,7 +636,7 @@
 
         // Initial Load
         window.onload = function() {
-            renderTable(stadiumData);
+            renderDivisions(stadiumData);
         };
     </script>
 </body>
